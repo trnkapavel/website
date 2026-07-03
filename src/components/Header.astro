@@ -1,0 +1,40 @@
+---
+import settings from '../content/singletons/settings.json';
+const nav = [
+  { href: '/how-i-work', label: 'How I Work' },
+  { href: '/writing', label: 'Writing' },
+  { href: '/about', label: 'About' },
+];
+const path = Astro.url.pathname;
+---
+<header class="wrap">
+  <a class="brand" href="/">{settings.siteName}</a>
+  <nav>
+    {nav.map((item) => (
+      <a href={item.href} aria-current={path.startsWith(item.href) ? 'page' : undefined}>
+        {item.label}
+      </a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-block: 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  a {
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  a:hover, a[aria-current='page'] { text-decoration: underline; }
+  .brand { font-weight: 700; }
+  nav { display: flex; gap: 1.5rem; }
+</style>

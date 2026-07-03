@@ -1,0 +1,18 @@
+---
+import home from '../content/singletons/home.json';
+import settings from '../content/singletons/settings.json';
+---
+<footer class="wrap">
+  <p class="label">⑥ Contact</p>
+  <h2><em>{home.ctaTitle}</em></h2>
+  <p class="links">
+    <a href={`mailto:${settings.email}`}>{settings.email}</a>
+    {settings.socials.map((s) => <a href={s.url}>{s.label}</a>)}
+  </p>
+</footer>
+
+<style>
+  footer { padding-block: 3rem 2.5rem; border-top: 1px solid var(--line); margin-top: 4rem; }
+  h2 { margin-top: 0.75rem; }
+  .links { margin-top: 1.25rem; display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.875rem; }
+</style>

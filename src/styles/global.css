@@ -3,7 +3,7 @@
   --paper: #f4f1ec;
   --ink: #111110;
   --muted: #6b655c;
-  --faint: #8a8378;
+  --faint: #6f6a5f;
   --line: #111110;
   --line-soft: #cfc9bf;
 
@@ -17,7 +17,9 @@
 
 * { box-sizing: border-box; margin: 0; }
 
-html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
 
 body {
   background: var(--paper);

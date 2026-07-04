@@ -11,8 +11,9 @@ import settings from '../content/singletons/settings.json';
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
 }
-const { title, description = settings.siteDescription } = Astro.props;
+const { title, description = settings.siteDescription, ogImage } = Astro.props;
 const pageTitle = title ? `${title} — ${settings.siteName}` : `${settings.siteName} — Brand & Product Designer`;
 ---
 <html lang="en">
@@ -25,6 +26,7 @@ const pageTitle = title ? `${title} — ${settings.siteName}` : `${settings.site
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    {ogImage && <meta property="og:image" content={new URL(ogImage, Astro.site)} />}
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
     <link rel="alternate" type="application/rss+xml" title="Writing" href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />

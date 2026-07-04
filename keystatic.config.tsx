@@ -68,6 +68,11 @@ export default config({
       schema: {
         title: fields.text({ label: 'Page title' }),
         body: fields.text({ label: 'Body (paragraphs split by blank line)', multiline: true }),
+        photo: fields.image({
+          label: 'Photo',
+          directory: 'src/assets/about',
+          publicPath: '../../assets/about/',
+        }),
       },
     }),
     settings: singleton({

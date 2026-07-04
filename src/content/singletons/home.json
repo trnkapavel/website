@@ -3,9 +3,18 @@
   "heroTitleEm": "AI makes me 10× faster at it.",
   "heroSubtitle": "Senior designer for agencies and teams. From identity to working prototype — with AI woven through the entire process, not bolted on.",
   "steps": [
-    { "title": "01 — Understand", "description": "Research & strategy, AI-accelerated discovery." },
-    { "title": "02 — Design", "description": "Brand & product design, rapid AI-assisted iteration." },
-    { "title": "03 — Build", "description": "Working prototypes, not just mockups." }
+    {
+      "title": "Understand",
+      "description": "Research & strategy, AI-accelerated discovery."
+    },
+    {
+      "title": "Design",
+      "description": "Brand & product design, rapid AI-assisted iteration."
+    },
+    {
+      "title": "Build",
+      "description": "Working prototypes, not just mockups."
+    }
   ],
   "services": [
     "Brand identity & strategy",

@@ -12,16 +12,18 @@ const posts = (await getCollection('writing'))
 <BaseLayout>
   <section class="wrap hero">
     <p class="label"><span aria-hidden="true">①</span> Hello</p>
-    <h1>{home.heroTitle}<br /><em>{home.heroTitleEm}</em></h1>
-    <p class="sub">{home.heroSubtitle}</p>
-    <p><a class="cta" href="/how-i-work/">See how I work ↓</a></p>
+    <h1 class="display">{home.heroTitle}<br /><em>{home.heroTitleEm}</em></h1>
+    <div class="hero-foot">
+      <p class="sub">{home.heroSubtitle}</p>
+      <a class="cta" href="/how-i-work/">See how I work <span aria-hidden="true">↓</span></a>
+    </div>
   </section>
 
   <section class="wrap block">
     <h2 class="label"><span aria-hidden="true">②</span> Process</h2>
     <div class="steps">
-      {home.steps.map((step) => (
-        <div class="step">
+      {home.steps.map((step, i) => (
+        <div class="step" data-num={String(i + 1).padStart(2, '0')}>
           <h3 class="step-title">{step.title}</h3>
           <p class="step-desc">{step.description}</p>
         </div>
@@ -31,12 +33,22 @@ const posts = (await getCollection('writing'))
 
   <section class="wrap block">
     <h2 class="label"><span aria-hidden="true">③</span> Selected work</h2>
-    <div class="work-grid">
+    <div class="work-list">
       {work.map((cs) => (
         <a class="work-card" href={`/work/${cs.id}/`}>
-          <Image src={cs.data.cover} alt="" widths={[640, 1200]} sizes="(max-width: 40rem) 100vw, 50vw" format="webp" />
-          <h3>{cs.data.title}</h3>
-          <p class="label">{cs.data.category} · {cs.data.year}</p>
+          <div class="frame">
+            <Image
+              src={cs.data.cover}
+              alt=""
+              widths={[768, 1200]}
+              sizes="(max-width: 72rem) 100vw, 72rem"
+              format="webp"
+            />
+          </div>
+          <div class="work-meta">
+            <h3>{cs.data.title} <span class="arrow" aria-hidden="true">→</span></h3>
+            <p class="label">{cs.data.category} · {cs.data.year}</p>
+          </div>
         </a>
       ))}
     </div>
@@ -47,62 +59,125 @@ const posts = (await getCollection('writing'))
       <h2 class="label"><span aria-hidden="true">④</span> Writing</h2>
       <ul class="post-list">
         {posts.map((post) => (
-          <li><a href={`/writing/${post.id}/`}>{post.data.title}</a></li>
+          <li><a href={`/writing/${post.id}/`}>{post.data.title}<span class="arrow" aria-hidden="true"> →</span></a></li>
         ))}
       </ul>
+      <p class="all-link"><a href="/writing/">All writing</a></p>
     </div>
     <div>
       <h2 class="label"><span aria-hidden="true">⑤</span> Services</h2>
       <ul class="service-list">
-        {home.services.map((service) => <li>{service}</li>)}
+        {home.services.map((service, i) => (
+          <li><span class="idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{service}</li>
+        ))}
       </ul>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .hero { padding-block: 4.5rem 3.5rem; border-bottom: 1px solid var(--line-soft); }
-  .hero h1 { margin-top: 1rem; max-width: 18ch; }
-  .sub { margin-top: 1.5rem; max-width: 34rem; color: var(--muted); }
+  .hero { padding-block: 5.5rem 4rem; border-bottom: 1px solid var(--line-soft); }
+  .hero h1 { margin-top: 1.5rem; text-wrap: balance; }
+  .hero-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+  .sub { max-width: 34rem; color: var(--muted); font-size: 1.0625rem; }
   .cta {
-    display: inline-block;
-    margin-top: 1.75rem;
+    flex-shrink: 0;
     font-size: 0.6875rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     text-decoration: none;
     border-bottom: 2px solid var(--line);
-    padding-bottom: 2px;
+    padding-bottom: 3px;
+    white-space: nowrap;
   }
+  .cta:hover { opacity: 0.6; }
 
-  .block { padding-block: 3rem; border-bottom: 1px solid var(--line-soft); }
+  .block { padding-block: 4rem; border-bottom: 1px solid var(--line-soft); }
 
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.25rem; }
-  .step { border-top: 1px solid var(--line); padding-top: 0.875rem; }
-  .step-title { font-family: var(--sans); font-size: 0.875rem; font-weight: 700; }
-  .step-desc { margin-top: 0.5rem; font-size: 0.875rem; color: var(--muted); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
+  .step { border-top: 1px solid var(--line); padding-top: 1.25rem; }
+  .step::before {
+    content: attr(data-num);
+    display: block;
+    font-family: var(--serif);
+    font-size: clamp(3.5rem, 6vw, 5.5rem);
+    line-height: 1;
+    color: var(--paper);
+    -webkit-text-stroke: 1px var(--faint);
+    margin-bottom: 1rem;
+  }
+  .step-title { font-family: var(--sans); font-size: 1rem; font-weight: 700; }
+  .step-desc { margin-top: 0.5rem; font-size: 0.9375rem; color: var(--muted); max-width: 26ch; }
 
-  .work-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.25rem; }
-  .work-card { text-decoration: none; }
-  .work-card h3 { margin-top: 0.875rem; }
-  .work-card h3:hover { text-decoration: underline; }
-  .work-card .label { margin-top: 0.375rem; }
+  .work-list { display: grid; gap: 3.5rem; margin-top: 2rem; }
+  .work-card { text-decoration: none; display: block; }
+  .frame { overflow: hidden; border: 1px solid var(--line-soft); }
+  .frame img { width: 100%; aspect-ratio: 16 / 8; object-fit: cover; }
+  .work-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+  }
+  .work-card h3 { font-size: clamp(1.625rem, 3.2vw, 2.375rem); }
+  .work-card .arrow { display: inline-block; }
+  .work-card:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
 
-  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
-  .post-list { list-style: none; padding: 0; margin-top: 1rem; }
+  .columns { display: grid; grid-template-columns: 3fr 2fr; gap: 4rem; }
+  .post-list { list-style: none; padding: 0; margin-top: 1.5rem; }
   .post-list li { border-bottom: 1px solid var(--line-soft); }
   .post-list li:last-child { border-bottom: 0; }
   .post-list a {
     display: block;
-    padding-block: 0.625rem;
+    padding-block: 0.875rem;
     font-family: var(--serif);
-    font-size: 1.125rem;
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
     text-decoration: none;
   }
-  .post-list a:hover { text-decoration: underline; }
-  .service-list { list-style: none; padding: 0; margin-top: 1rem; font-size: 0.9375rem; line-height: 2.1; }
+  .post-list .arrow { opacity: 0; }
+  .post-list a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .post-list a:hover .arrow { opacity: 1; }
+  .all-link { margin-top: 1.25rem; }
+  .all-link a {
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+  }
+  .service-list { list-style: none; padding: 0; margin-top: 1.5rem; }
+  .service-list li {
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 0.9375rem;
+  }
+  .service-list li:last-child { border-bottom: 0; }
+  .service-list .idx {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--faint);
+    margin-right: 0.875rem;
+  }
 
-  @media (max-width: 40rem) {
-    .steps, .work-grid, .columns { grid-template-columns: 1fr; }
+  @media (prefers-reduced-motion: no-preference) {
+    .frame img { transition: transform 0.6s ease; }
+    .work-card:hover .frame img { transform: scale(1.025); }
+    .post-list .arrow { transition: opacity 0.2s ease; }
+    .cta { transition: opacity 0.2s ease; }
+  }
+
+  @media (max-width: 48rem) {
+    .hero-foot { flex-direction: column; align-items: flex-start; }
+    .steps, .columns { grid-template-columns: 1fr; }
+    .columns { gap: 3rem; }
   }
 </style>

@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import about from '../content/singletons/about.json';
+
+const paragraphs = about.body.split(/\n\s*\n/).filter(Boolean);
+---
+<BaseLayout title={about.title} description="Who I am — senior brand & product designer working with AI.">
+  <section class="wrap">
+    <header><h1>{about.title}</h1></header>
+    <div class="prose">
+      {paragraphs.map((p) => <p>{p}</p>)}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  header { padding-block: 3.5rem 2rem; }
+  .prose { padding-bottom: 2rem; }
+</style>

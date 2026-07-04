@@ -18,7 +18,7 @@ const posts = (await getCollection('writing'))
   </section>
 
   <section class="wrap block">
-    <p class="label"><span aria-hidden="true">②</span> Process</p>
+    <h2 class="label"><span aria-hidden="true">②</span> Process</h2>
     <div class="steps">
       {home.steps.map((step) => (
         <div class="step">
@@ -30,11 +30,11 @@ const posts = (await getCollection('writing'))
   </section>
 
   <section class="wrap block">
-    <p class="label"><span aria-hidden="true">③</span> Selected work</p>
+    <h2 class="label"><span aria-hidden="true">③</span> Selected work</h2>
     <div class="work-grid">
       {work.map((cs) => (
         <a class="work-card" href={`/work/${cs.id}/`}>
-          <Image src={cs.data.cover} alt="" widths={[640, 1200]} sizes="(max-width: 40rem) 100vw, 50vw" />
+          <Image src={cs.data.cover} alt="" widths={[640, 1200]} sizes="(max-width: 40rem) 100vw, 50vw" format="webp" />
           <h3>{cs.data.title}</h3>
           <p class="label">{cs.data.category} · {cs.data.year}</p>
         </a>
@@ -44,7 +44,7 @@ const posts = (await getCollection('writing'))
 
   <section class="wrap block columns">
     <div>
-      <p class="label"><span aria-hidden="true">④</span> Writing</p>
+      <h2 class="label"><span aria-hidden="true">④</span> Writing</h2>
       <ul class="post-list">
         {posts.map((post) => (
           <li><a href={`/writing/${post.id}/`}>{post.data.title}</a></li>
@@ -52,7 +52,7 @@ const posts = (await getCollection('writing'))
       </ul>
     </div>
     <div>
-      <p class="label"><span aria-hidden="true">⑤</span> Services</p>
+      <h2 class="label"><span aria-hidden="true">⑤</span> Services</h2>
       <ul class="service-list">
         {home.services.map((service) => <li>{service}</li>)}
       </ul>

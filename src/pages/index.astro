@@ -2,28 +2,41 @@
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionRail from '../components/SectionRail.astro';
 import home from '../content/singletons/home.json';
+import settings from '../content/singletons/settings.json';
 
 const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order).slice(0, 2);
 const posts = (await getCollection('writing'))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
+
+const [emBefore, emAfter] = home.heroTitleEm.split('10×');
 ---
 <BaseLayout>
-  <section class="wrap hero">
+  <SectionRail />
+  <section class="wrap hero" id="hello" data-spy="01">
+    <svg class="hero-lines" viewBox="0 0 420 600" aria-hidden="true">
+      <path class="line line-1" d="M 20,560 C 120,520 130,380 240,340 C 340,305 360,180 400,40" />
+      <path class="line line-2" d="M 60,600 C 160,570 170,430 280,400 C 370,375 380,240 340,120" />
+      <path class="line line-3" d="M 0,420 C 110,400 140,260 250,220 C 330,192 320,90 260,10" />
+    </svg>
     <p class="label"><span aria-hidden="true">①</span> Hello</p>
-    <h1 class="display">{home.heroTitle}<br /><em>{home.heroTitleEm}</em></h1>
+    <h1 class="display">{home.heroTitle}<br /><em>{emBefore}<span class="metric">10×</span>{emAfter}</em></h1>
     <div class="hero-foot">
       <p class="sub">{home.heroSubtitle}</p>
-      <a class="cta" href="/how-i-work/">See how I work <span aria-hidden="true">↓</span></a>
+      <div class="hero-ctas">
+        <a class="cta" href="/how-i-work/">See how I work <span aria-hidden="true">↓</span></a>
+        <a class="cta-quiet" href={`mailto:${settings.email}`}>Or email me directly <span aria-hidden="true">→</span></a>
+      </div>
     </div>
   </section>
 
-  <section class="wrap block">
+  <section class="wrap block" id="process" data-spy="02">
     <h2 class="label"><span aria-hidden="true">②</span> Process</h2>
     <div class="steps">
       {home.steps.map((step, i) => (
-        <div class="step" data-num={String(i + 1).padStart(2, '0')}>
+        <div class="step" data-num={String(i + 1).padStart(2, '0')} data-reveal style={`transition-delay:${i * 80}ms`}>
           <h3 class="step-title">{step.title}</h3>
           <p class="step-desc">{step.description}</p>
         </div>
@@ -31,16 +44,16 @@ const posts = (await getCollection('writing'))
     </div>
   </section>
 
-  <section class="wrap block">
+  <section class="wrap block" data-chapter="03" id="work" data-spy="03">
     <h2 class="label"><span aria-hidden="true">③</span> Selected work</h2>
     <div class="work-list">
-      {work.map((cs) => (
-        <a class="work-card" href={`/work/${cs.id}/`}>
+      {work.map((cs, i) => (
+        <a class="work-card" href={`/work/${cs.id}/`} data-reveal style={`transition-delay:${i * 100}ms`}>
           <div class="frame">
             <Image
               src={cs.data.cover}
               alt=""
-              widths={[768, 1200]}
+              widths={[768, 1200, 2400]}
               sizes="(max-width: 72rem) 100vw, 72rem"
               format="webp"
             />
@@ -55,20 +68,20 @@ const posts = (await getCollection('writing'))
   </section>
 
   <section class="wrap block columns">
-    <div>
+    <div data-chapter="04" id="writing" data-spy="04">
       <h2 class="label"><span aria-hidden="true">④</span> Writing</h2>
       <ul class="post-list">
-        {posts.map((post) => (
-          <li><a href={`/writing/${post.id}/`}>{post.data.title}<span class="arrow" aria-hidden="true"> →</span></a></li>
+        {posts.map((post, i) => (
+          <li data-reveal style={`transition-delay:${i * 80}ms`}><a href={`/writing/${post.id}/`}>{post.data.title}<span class="arrow" aria-hidden="true"> →</span></a></li>
         ))}
       </ul>
       <p class="all-link"><a href="/writing/">All writing</a></p>
     </div>
-    <div>
+    <div data-chapter="05" id="services" data-spy="05">
       <h2 class="label"><span aria-hidden="true">⑤</span> Services</h2>
       <ul class="service-list">
         {home.services.map((service, i) => (
-          <li><span class="idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{service}</li>
+          <li data-reveal style={`transition-delay:${i * 80}ms`}><span class="idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{service}</li>
         ))}
       </ul>
     </div>
@@ -76,8 +89,51 @@ const posts = (await getCollection('writing'))
 </BaseLayout>
 
 <style>
-  .hero { padding-block: 5.5rem 4rem; border-bottom: 1px solid var(--line-soft); }
+  .hero { position: relative; padding-block: 5.5rem 4rem; border-bottom: 1px solid var(--line-soft); }
   .hero h1 { margin-top: 1.5rem; text-wrap: balance; }
+  .hero h1 em { color: var(--muted); }
+  .hero .metric {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    display: inline-block;
+    min-width: 2ch;
+  }
+  .hero > .label, .hero > h1, .hero > .hero-foot { position: relative; z-index: 1; }
+
+  /* Hero line drawing — a pen-drawn abstract mark instead of a generic AI gradient blob */
+  .hero-lines {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(30vw, 22rem);
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .hero-lines .line { fill: none; stroke-linecap: round; }
+  .hero-lines .line-1 { stroke: var(--accent); stroke-width: 1.5; }
+  .hero-lines .line-2 { stroke: var(--line-soft); stroke-width: 1.25; }
+  .hero-lines .line-3 { stroke: var(--faint); stroke-width: 1; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-lines .line {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: draw-line 7s ease-in-out infinite;
+    }
+    .hero-lines .line-2 { animation-delay: 0.15s; }
+    .hero-lines .line-3 { animation-delay: 0.3s; }
+  }
+  @keyframes draw-line {
+    0%, 8% { stroke-dashoffset: 1000; }
+    45%, 55% { stroke-dashoffset: 0; }
+    92%, 100% { stroke-dashoffset: -1000; }
+  }
+
+  @media (max-width: 48rem) {
+    .hero-lines { display: none; }
+  }
   .hero-foot {
     display: flex;
     justify-content: space-between;
@@ -92,11 +148,22 @@ const posts = (await getCollection('writing'))
     letter-spacing: 0.14em;
     text-transform: uppercase;
     text-decoration: none;
-    border-bottom: 2px solid var(--line);
+    border-bottom: 2px solid var(--accent);
     padding-bottom: 3px;
     white-space: nowrap;
   }
   .cta:hover { opacity: 0.6; }
+
+  .hero-ctas { display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; flex-shrink: 0; }
+  .cta-quiet {
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .cta-quiet:hover { color: var(--ink); }
 
   .block { padding-block: 4rem; border-bottom: 1px solid var(--line-soft); }
 
@@ -168,6 +235,23 @@ const posts = (await getCollection('writing'))
     margin-right: 0.875rem;
   }
 
+  /* Folio watermark — echoes .step::before to give the thinner sections more editorial weight */
+  [data-chapter] { position: relative; }
+  [data-chapter]::before {
+    content: attr(data-chapter);
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-family: var(--serif);
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 1;
+    color: var(--paper);
+    -webkit-text-stroke: 1px var(--line-soft);
+    pointer-events: none;
+    z-index: 0;
+  }
+  [data-chapter] > * { position: relative; z-index: 1; }
+
   @media (prefers-reduced-motion: no-preference) {
     .frame img { transition: transform 0.6s ease; }
     .work-card:hover .frame img { transform: scale(1.025); }
@@ -177,7 +261,23 @@ const posts = (await getCollection('writing'))
 
   @media (max-width: 48rem) {
     .hero-foot { flex-direction: column; align-items: flex-start; }
+    .hero-ctas { align-items: flex-start; margin-top: 0.5rem; }
     .steps, .columns { grid-template-columns: 1fr; }
     .columns { gap: 3rem; }
   }
 </style>
+
+<script>
+  const metric = document.querySelector<HTMLElement>('.hero .metric');
+  if (metric && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const target = 10;
+    const duration = 900;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      metric.textContent = `${Math.round(progress * target)}×`;
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+</script>

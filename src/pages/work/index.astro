@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+---
+<BaseLayout title="Work" description="Case studies — product design shipped into real production.">
+  <section class="wrap block">
+    <header>
+      <p class="label"><span aria-hidden="true">①</span> Work</p>
+      <h1>Case studies</h1>
+    </header>
+    <div class="work-list">
+      {work.map((cs, i) => (
+        <a class="work-card" href={`/work/${cs.id}/`} data-reveal style={`transition-delay:${i * 80}ms`}>
+          <div class="frame">
+            <Image
+              src={cs.data.cover}
+              alt=""
+              widths={[768, 1200, 2400]}
+              sizes="(max-width: 72rem) 100vw, 72rem"
+              format="webp"
+            />
+          </div>
+          <div class="work-meta">
+            <h3>{cs.data.title} <span class="arrow" aria-hidden="true">→</span></h3>
+            <p class="label">{cs.data.category} · {cs.data.year}{cs.data.status ? ` · ${cs.data.status}` : ''}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  header { padding-block: 3.5rem 2rem; }
+  header h1 { margin-top: 1rem; }
+  .block { padding-block: 0 4rem; }
+  .work-list { display: grid; gap: 3.5rem; margin-top: 2rem; }
+  .work-card { text-decoration: none; display: block; }
+  .frame { overflow: hidden; border: 1px solid var(--line-soft); }
+  .frame img { width: 100%; aspect-ratio: 16 / 8; object-fit: cover; }
+  .work-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+  }
+  .work-card h3 { font-size: clamp(1.625rem, 3.2vw, 2.375rem); }
+  .work-card .arrow { display: inline-block; }
+  .work-card:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .frame img { transition: transform 0.6s ease; }
+    .work-card:hover .frame img { transform: scale(1.025); }
+  }
+</style>

@@ -1,0 +1,12 @@
+---
+title: Why I don't reach for Tailwind on product work
+date: 2026-07-04
+excerpt: Tailwind is a great accelerator for iteration — and exactly why interfaces built on it start to look alike.
+---
+I use Tailwind, and I rate it highly for fast iteration. Paired with AI tooling, it lets you build and test UI at a speed that wouldn't otherwise be possible.
+
+But it has a limit worth naming: heavy reliance on it produces recognisably generated output. A site or app starts to look "like AI made it." Not necessarily bad — but worth being aware of, and worth working against on purpose.
+
+For a larger product application, I wouldn't reach for Tailwind as the primary approach. I prefer clean CSS with clear architecture: more readable HTML, better control over the design system, easier debugging. Utility classes earn their place in specific spots — they're not a foundation for the whole system.
+
+This site is built that way on purpose: hand-written CSS, design tokens, no utility-class layer underneath. It's slower to iterate on than shipping straight from a component library. It's also why it doesn't read like every other AI-assisted build this year.

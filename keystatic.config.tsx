@@ -16,11 +16,28 @@ export default config({
         role: fields.text({ label: 'Role' }),
         scope: fields.text({ label: 'Scope' }),
         outcome: fields.text({ label: 'Outcome (number / impact)' }),
+        status: fields.text({
+          label: 'Status (e.g. Production, Concept — shelved)',
+        }),
         cover: fields.image({
           label: 'Cover image',
           directory: 'src/assets/work',
           publicPath: '../../assets/work/',
         }),
+        gallery: fields.array(
+          fields.object({
+            image: fields.image({
+              label: 'Image',
+              directory: 'src/assets/work',
+              publicPath: '../../assets/work/',
+            }),
+            caption: fields.text({ label: 'Caption' }),
+          }),
+          {
+            label: 'Gallery',
+            itemLabel: (props) => props.fields.caption.value || 'Image',
+          },
+        ),
         order: fields.integer({ label: 'Order on homepage', defaultValue: 1 }),
         content: fields.markdoc({ label: 'Case study body' }),
       },

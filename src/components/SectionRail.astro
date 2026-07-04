@@ -1,0 +1,112 @@
+---
+const items = [
+  { id: 'hello', num: '01' },
+  { id: 'process', num: '02' },
+  { id: 'work', num: '03' },
+  { id: 'writing', num: '04' },
+  { id: 'services', num: '05' },
+];
+---
+<nav class="rail" aria-label="Section navigation">
+  <div class="track">
+    <div class="fill"></div>
+  </div>
+  <ul>
+    {items.map((item) => (
+      <li>
+        <a href={`#${item.id}`} data-spy-link={item.id}>{item.num}</a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .rail {
+    position: fixed;
+    right: 1.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+  }
+  .rail ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .rail a {
+    display: block;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.8125rem;
+    color: var(--faint);
+    text-decoration: none;
+    text-align: right;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+  .rail a:hover { color: var(--ink); }
+  .rail a.is-active {
+    color: var(--accent);
+    font-style: normal;
+    font-weight: 700;
+    transform: scale(1.1);
+  }
+
+  .track {
+    position: absolute;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    right: -0.9rem;
+    width: 1px;
+    background: var(--line-soft);
+  }
+  .fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: var(--accent);
+    transition: height 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  @media (max-width: 48rem) {
+    .rail { display: none; }
+  }
+</style>
+
+<script>
+  const rail = document.querySelector<HTMLElement>('.rail');
+  const links = document.querySelectorAll<HTMLAnchorElement>('.rail a[data-spy-link]');
+  const fill = document.querySelector<HTMLElement>('.rail .fill');
+  const sections = Array.from(links)
+    .map((link) => document.getElementById(link.dataset.spyLink ?? ''))
+    .filter((el): el is HTMLElement => el !== null);
+
+  if (rail && fill && 'IntersectionObserver' in window && sections.length) {
+    const setActive = (id: string) => {
+      const index = Array.from(links).findIndex((link) => link.dataset.spyLink === id);
+      if (index === -1) return;
+      links.forEach((link) => {
+        const isActive = link.dataset.spyLink === id;
+        link.classList.toggle('is-active', isActive);
+        if (isActive) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      });
+      const progress = links.length > 1 ? index / (links.length - 1) : 0;
+      fill.style.height = `${progress * 100}%`;
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        }
+      },
+      { rootMargin: '-40% 0px -40% 0px' }
+    );
+    sections.forEach((section) => io.observe(section));
+  }
+</script>

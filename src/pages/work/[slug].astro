@@ -22,19 +22,31 @@ const facts = [
     <header>
       <p class="label">{entry.data.category} · {entry.data.year} · {entry.data.duration}</p>
       <h1>{entry.data.title}</h1>
+      {entry.data.status && <p class="status">{entry.data.status}</p>}
     </header>
 
-    <Image src={entry.data.cover} alt="" widths={[768, 1200]} sizes="(max-width: 72rem) 100vw, 72rem" format="webp" class="cover" />
+    <Image src={entry.data.cover} alt="" widths={[768, 1200, 2400]} sizes="(max-width: 72rem) 100vw, 72rem" format="webp" class="cover" />
 
     <dl class="facts">
-      {facts.map((fact) => (
-        <div><dt class="label">{fact.label}</dt><dd>{fact.value}</dd></div>
+      {facts.map((fact, i) => (
+        <div data-reveal style={`transition-delay:${i * 80}ms`}><dt class="label">{fact.label}</dt><dd>{fact.value}</dd></div>
       ))}
     </dl>
 
     <div class="prose">
       <Content />
     </div>
+
+    {entry.data.gallery && entry.data.gallery.length > 0 && (
+      <div class="gallery">
+        {entry.data.gallery.map((item) => (
+          <figure>
+            <Image src={item.image} alt="" widths={[480, 960]} sizes="(max-width: 40rem) 100vw, 50vw" format="webp" />
+            <figcaption>{item.caption}</figcaption>
+          </figure>
+        ))}
+      </div>
+    )}
 
     <footer class="cs-footer">
       <hr class="rule" />
@@ -46,7 +58,22 @@ const facts = [
 <style>
   header { padding-block: 3.5rem 2rem; }
   header h1 { margin-top: 1rem; max-width: 24ch; }
+  header .status {
+    margin-top: 0.75rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
   .cover { width: 100%; }
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding-block: 1rem 2.5rem;
+  }
+  .gallery img { width: 100%; border: 1px solid var(--line-soft); }
+  .gallery figcaption { margin-top: 0.625rem; font-size: 0.875rem; color: var(--muted); }
   .facts {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -61,5 +88,6 @@ const facts = [
 
   @media (max-width: 40rem) {
     .facts { grid-template-columns: 1fr; gap: 0.875rem; }
+    .gallery { grid-template-columns: 1fr; gap: 1.5rem; }
   }
 </style>

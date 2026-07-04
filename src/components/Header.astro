@@ -1,6 +1,7 @@
 ---
 import settings from '../content/singletons/settings.json';
 const nav = [
+  { href: '/work/', label: 'Work' },
   { href: '/how-i-work/', label: 'How I Work' },
   { href: '/writing/', label: 'Writing' },
   { href: '/about/', label: 'About' },
@@ -9,7 +10,10 @@ const path = Astro.url.pathname;
 ---
 <header class="wrap">
   <a class="brand" href="/">{settings.siteName}</a>
-  <nav>
+  <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="site-nav">
+    <span>Menu</span>
+  </button>
+  <nav id="site-nav">
     {nav.map((item) => (
       <a href={item.href} aria-current={(path === item.href || path === item.href.slice(0, -1)) ? 'page' : undefined}>
         {item.label}
@@ -37,4 +41,42 @@ const path = Astro.url.pathname;
   a:hover, a[aria-current='page'] { text-decoration: underline; }
   .brand { font-weight: 700; }
   nav { display: flex; gap: 1.5rem; }
+
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: 1px solid var(--line);
+    padding: 0.375rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  @media (max-width: 40rem) {
+    .menu-toggle { display: block; }
+    nav {
+      display: none;
+      order: 3;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+    }
+    nav.is-open { display: flex; }
+    nav a { padding-block: 0.75rem; border-top: 1px solid var(--line-soft); }
+  }
 </style>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const nav = document.getElementById('site-nav');
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = nav?.classList.toggle('is-open') ?? false;
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    const label = toggle.querySelector('span');
+    if (label) label.textContent = isOpen ? 'Close' : 'Menu';
+  });
+</script>

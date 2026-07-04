@@ -12,7 +12,16 @@ const work = defineCollection({
       role: z.string(),
       scope: z.string(),
       outcome: z.string(),
+      status: z.string().optional(),
       cover: image(),
+      gallery: z
+        .array(
+          z.object({
+            image: image(),
+            caption: z.string(),
+          }),
+        )
+        .optional(),
       order: z.number().default(1),
     }),
 });

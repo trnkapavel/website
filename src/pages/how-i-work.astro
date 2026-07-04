@@ -34,8 +34,8 @@ const phases = [
     </p>
   </section>
 
-  {phases.map((phase) => (
-    <section class="wrap phase">
+  {phases.map((phase, i) => (
+    <section class="wrap phase" data-reveal style={`transition-delay:${i * 80}ms`}>
       <hr class="rule" />
       <h2><span class="num" aria-hidden="true">{phase.number}</span> {phase.title}</h2>
       <div class="grid">

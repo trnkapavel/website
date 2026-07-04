@@ -11,6 +11,7 @@
   "dependencies": {
     "@astrojs/markdoc": "^1.0.6",
     "@astrojs/react": "^5.0.7",
+    "@astrojs/rss": "^4.0.19",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/newsreader": "^5.2.10",
     "@keystatic/astro": "^5.1.0",

@@ -7,5 +7,6 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 export default defineConfig({
   site: 'https://example.com', // TODO při nasazení: nahradit skutečnou doménou (jediný povolený TODO v projektu)
+  trailingSlash: 'always',
   integrations: [react(), markdoc(), ...(isDev ? [keystatic()] : [])],
 });

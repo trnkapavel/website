@@ -1,9 +1,9 @@
 ---
 import settings from '../content/singletons/settings.json';
 const nav = [
-  { href: '/how-i-work', label: 'How I Work' },
-  { href: '/writing', label: 'Writing' },
-  { href: '/about', label: 'About' },
+  { href: '/how-i-work/', label: 'How I Work' },
+  { href: '/writing/', label: 'Writing' },
+  { href: '/about/', label: 'About' },
 ];
 const path = Astro.url.pathname;
 ---
@@ -11,7 +11,7 @@ const path = Astro.url.pathname;
   <a class="brand" href="/">{settings.siteName}</a>
   <nav>
     {nav.map((item) => (
-      <a href={item.href} aria-current={path.startsWith(item.href) ? 'page' : undefined}>
+      <a href={item.href} aria-current={(path === item.href || path === item.href.slice(0, -1)) ? 'page' : undefined}>
         {item.label}
       </a>
     ))}

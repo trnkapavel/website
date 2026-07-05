@@ -76,6 +76,13 @@ export default config({
           itemLabel: (p) => p.value,
         }),
         ctaTitle: fields.text({ label: 'CTA title' }),
+        faq: fields.array(
+          fields.object({
+            question: fields.text({ label: 'Question' }),
+            answer: fields.text({ label: 'Answer', multiline: true }),
+          }),
+          { label: 'FAQ', itemLabel: (p) => p.fields.question.value },
+        ),
       },
     }),
     about: singleton({

@@ -22,5 +22,31 @@
     "AI-assisted prototyping & build",
     "AI workflow consulting for teams"
   ],
-  "ctaTitle": "Have a project in mind? Let's talk."
+  "ctaTitle": "Have a project in mind? Let's talk.",
+  "faq": [
+    {
+      "question": "How does a project typically start?",
+      "answer": "With a short call to understand the problem, then a scoped proposal. Work moves through the same three stages as my process: understand, design, build — usually with a working prototype before final visual polish."
+    },
+    {
+      "question": "Do you design and build, or hand off Figma files?",
+      "answer": "Both, depending on the project. I design in Figma and hand-code the front end myself when it matters — most of this site's CSS is written by hand, not generated. For larger teams I can also hand off clean, documented files."
+    },
+    {
+      "question": "Do you work with teams outside the Czech Republic?",
+      "answer": "Yes, most of my clients are outside the Czech Republic. I keep a few hours of overlap with US and Western European time zones for calls and async the rest."
+    },
+    {
+      "question": "How do you use AI in your process?",
+      "answer": "As an accelerant for research, iteration, and prototyping — not as a replacement for design decisions. Every direction still gets judged and refined by hand before it ships."
+    },
+    {
+      "question": "What kind of projects do you specialize in?",
+      "answer": "Hospitality and subscription products — booking flows, member dashboards, and the brand and product design work around them."
+    },
+    {
+      "question": "Are you available for new work?",
+      "answer": "Availability varies — email me and I'll tell you honestly whether the timing works."
+    }
+  ]
 }

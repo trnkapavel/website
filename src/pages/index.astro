@@ -86,6 +86,21 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
       </ul>
     </div>
   </section>
+
+  <section class="wrap block" data-chapter="06" id="faq" data-spy="06">
+    <h2 class="label"><span aria-hidden="true">⑥</span> FAQ</h2>
+    <div class="faq-list">
+      {home.faq.map((item, i) => (
+        <details class="faq-item" data-reveal style={`transition-delay:${i * 60}ms`}>
+          <summary>
+            <span class="faq-q">{item.question}</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </summary>
+          <p class="faq-a">{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
@@ -271,6 +286,39 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
   }
   [data-chapter] > * { position: relative; z-index: 1; }
 
+  .faq-list { margin-top: 2rem; max-width: var(--measure); }
+  .faq-item {
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .faq-item:first-child { border-top: 1px solid var(--line-soft); }
+  .faq-item summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding-block: 1.25rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-q {
+    font-family: var(--serif);
+    font-size: clamp(1.0625rem, 2vw, 1.25rem);
+  }
+  .faq-icon {
+    flex-shrink: 0;
+    font-family: var(--sans);
+    color: var(--faint);
+    transition: transform 0.2s ease;
+  }
+  .faq-item[open] .faq-icon { transform: rotate(45deg); color: var(--accent); }
+  .faq-a {
+    padding-bottom: 1.25rem;
+    max-width: 42ch;
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .frame img { transition: transform 0.6s ease; }
     .work-card:hover .frame img { transform: scale(1.025); }
@@ -283,6 +331,7 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
     .hero-ctas { align-items: flex-start; margin-top: 0.5rem; }
     .steps, .columns { grid-template-columns: 1fr; }
     .columns { gap: 3rem; }
+    .faq-a { max-width: none; }
   }
 </style>
 

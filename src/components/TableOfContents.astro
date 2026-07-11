@@ -1,0 +1,60 @@
+---
+import { slugify } from '../lib/slugify.mjs';
+
+interface Props {
+  body: string;
+}
+
+const { body } = Astro.props;
+const headings = [...body.matchAll(/^##\s+(.+)$/gm)].map((match) => {
+  const text = match[1].trim();
+  return { text, id: slugify(text) };
+});
+---
+
+{
+  headings.length > 1 && (
+    <nav class="toc" aria-label="Table of contents">
+      <p class="toc-label">Contents</p>
+      <ol>
+        {headings.map((heading) => (
+          <li>
+            <a href={`#${heading.id}`}>{heading.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .toc-label {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.875rem;
+  }
+  .toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .toc li {
+    padding-left: 0.875rem;
+    border-left: 1px solid var(--line-soft);
+  }
+  .toc a {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .toc a:hover {
+    color: var(--ink);
+  }
+</style>

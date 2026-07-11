@@ -1,0 +1,530 @@
+---
+interface Props {
+  email: string;
+}
+const { email } = Astro.props;
+
+// Replace with the actual worker URL after deployment (see cloudflare/ai-audit/).
+const WORKER_URL = 'https://api.example.com/audit';
+// Replace with the Turnstile site key from the Cloudflare dashboard.
+const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
+---
+
+<section class="wrap block" id="ai-audit" data-spy="02" data-worker-url={WORKER_URL}>
+  <h2 class="label"><span aria-hidden="true">②</span> AI audit</h2>
+  <p class="sub">
+    Write a few sentences about your business or process — the AI will ask one
+    follow-up question and show you a visual comparison of how you handle it
+    today versus how it could work with AI.
+  </p>
+
+  <div id="ai-audit-initial">
+    <form id="ai-audit-form" class="ai-audit-form">
+      <div class="ai-audit-terminal" data-reveal-terminal>
+        <div class="ai-audit-terminal-bar">
+          <span class="ai-audit-dot" aria-hidden="true"></span>
+          <span class="ai-audit-dot" aria-hidden="true"></span>
+          <span class="ai-audit-dot" aria-hidden="true"></span>
+          <span class="ai-audit-terminal-label">ai audit — describe how you do it today</span>
+        </div>
+        <div class="ai-audit-terminal-body">
+          <span class="ai-audit-prompt" aria-hidden="true">❯</span>
+          <textarea
+            id="ai-audit-input"
+            name="description"
+            maxlength="500"
+            rows="4"
+            placeholder="E.g. a 12-room guesthouse, guest communication is handled manually over email and WhatsApp, check-in happens at the front desk"
+            required
+          ></textarea>
+        </div>
+        <div class="ai-audit-terminal-foot">
+          <button type="submit" class="cta-button">Run audit <span aria-hidden="true">→</span></button>
+          <p class="ai-audit-hint">Max 3× a day, free.</p>
+          <span id="ai-audit-char-count" class="ai-audit-char-count">0 characters</span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div id="ai-audit-followup" class="ai-audit-followup" hidden>
+    <p id="ai-audit-followup-question" class="ai-audit-followup-question"></p>
+    <form id="ai-audit-followup-form" class="ai-audit-form">
+      <div class="ai-audit-terminal" data-reveal-terminal>
+        <div class="ai-audit-terminal-bar">
+          <span class="ai-audit-dot" aria-hidden="true"></span>
+          <span class="ai-audit-dot" aria-hidden="true"></span>
+          <span class="ai-audit-dot" aria-hidden="true"></span>
+          <span class="ai-audit-terminal-label">ai audit — your answer</span>
+        </div>
+        <div class="ai-audit-terminal-body">
+          <span class="ai-audit-prompt" aria-hidden="true">❯</span>
+          <textarea
+            id="ai-audit-followup-input"
+            name="answer"
+            maxlength="500"
+            rows="3"
+            placeholder="Answer…"
+            required
+          ></textarea>
+        </div>
+        <div class="ai-audit-terminal-foot">
+          <button type="submit" class="cta-button">Reply <span aria-hidden="true">→</span></button>
+          <span id="ai-audit-followup-char-count" class="ai-audit-char-count">0 characters</span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-theme="light" data-appearance="interaction-only" data-callback="onTurnstileToken"></div>
+
+  <p id="ai-audit-error" class="ai-audit-error" role="alert" hidden></p>
+
+  <div id="ai-audit-result" class="ai-audit-result" hidden></div>
+
+  <div id="ai-audit-fallback" class="ai-audit-fallback" hidden>
+    <p>Live audit isn't available right now. Email me directly and I'll take a look by hand.</p>
+    <a class="cta-button" href={`mailto:${email}?subject=AI audit`}>Send an email <span aria-hidden="true">→</span></a>
+  </div>
+
+  <p class="ai-audit-cta">
+    Want to talk through AI opportunities for your business live?
+    <a href={`mailto:${email}?subject=AI consultation`}>Email me</a>.
+  </p>
+</section>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<style>
+  .block { padding-block: 4rem; border-bottom: 1px solid var(--line-soft); }
+  .sub { max-width: 34rem; color: var(--muted); font-size: 1.0625rem; margin-top: 1rem; }
+
+  .ai-audit-form {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .ai-audit-terminal {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line-soft);
+    background: var(--paper);
+    box-shadow: 0 12px 30px -20px rgba(17, 17, 16, 0.15);
+    transform-origin: center top;
+    aspect-ratio: 16 / 8;
+  }
+  @media (max-width: 48rem) {
+    .ai-audit-terminal { aspect-ratio: unset; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ai-audit-terminal {
+      opacity: 0;
+      transform: perspective(1400px) rotateX(12deg) scale(0.96);
+      transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out;
+    }
+    .ai-audit-terminal.is-visible {
+      opacity: 1;
+      transform: perspective(1400px) rotateX(0deg) scale(1);
+    }
+  }
+  .ai-audit-terminal:focus-within {
+    border-color: var(--ink);
+  }
+  .ai-audit-terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem var(--gutter);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .ai-audit-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: var(--line-soft);
+  }
+  .ai-audit-terminal-label {
+    margin-left: 0.5rem;
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .ai-audit-terminal-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 0.875rem;
+    padding: 1.75rem var(--gutter);
+  }
+  .ai-audit-prompt {
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 1.125rem;
+    color: var(--accent);
+    line-height: 1.6;
+    flex-shrink: 0;
+  }
+  .ai-audit-terminal-body textarea {
+    flex: 1;
+    height: 100%;
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    resize: none;
+  }
+  .ai-audit-terminal-body textarea:focus {
+    outline: none;
+  }
+  .ai-audit-terminal-foot {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem var(--gutter);
+    border-top: 1px solid var(--line-soft);
+  }
+  .ai-audit-char-count {
+    margin-left: auto;
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    color: var(--faint);
+  }
+  .cta-button {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .cta-button:hover { opacity: 0.8; }
+  .cta-button:active { transform: translateY(1px) scale(0.98); }
+  .cta-button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ai-audit-hint { font-size: 0.8125rem; color: var(--faint); }
+
+  .ai-audit-followup {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line-soft);
+  }
+  .ai-audit-followup-question {
+    font-size: 1.0625rem;
+    margin-bottom: 0.5rem;
+    max-width: 34rem;
+  }
+
+  .ai-audit-error {
+    margin-top: 1rem;
+    color: var(--accent);
+    font-size: 0.9375rem;
+    max-width: 34rem;
+  }
+
+  .ai-audit-result {
+    margin-top: 1.5rem;
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+  /* These classes belong to elements created at runtime in <script> (renderResult),
+     so Astro doesn't scope them at build time — they must stay :global. */
+  :global(.ai-audit-highlight) {
+    font-size: 1.0625rem;
+    font-family: var(--serif);
+    margin-bottom: 1.25rem;
+  }
+  :global(.ai-audit-diff) {
+    border: 1px solid var(--line-soft);
+    background: var(--paper);
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    overflow: hidden;
+  }
+  :global(.ai-audit-diff-hunk-label) {
+    padding: 0.625rem 1.25rem;
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: rgba(17, 17, 16, 0.035);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  :global(.ai-audit-diff-hunk-label:not(:first-child)) {
+    border-top: 1px solid var(--line-soft);
+  }
+  :global(.ai-audit-diff-line) {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.375rem 1.25rem;
+    border-left: 3px solid transparent;
+  }
+  :global(.ai-audit-diff-line-remove) {
+    color: #8a3226;
+    background: rgba(200, 64, 31, 0.06);
+    border-left-color: rgba(200, 64, 31, 0.4);
+  }
+  :global(.ai-audit-diff-line-add) {
+    color: #2f5c3a;
+    background: rgba(63, 107, 74, 0.07);
+    border-left-color: rgba(63, 107, 74, 0.45);
+  }
+  :global(.ai-audit-diff-marker) {
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .ai-audit-fallback {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line-soft);
+    max-width: 34rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .ai-audit-fallback[hidden] { display: none; }
+
+  .ai-audit-cta {
+    margin-top: 2rem;
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+
+</style>
+
+<script>
+  type Msg = { role: 'user' | 'assistant'; content: string; sig?: string };
+  type Stage = 'initial' | 'followup' | 'result' | 'fallback';
+
+  declare global {
+    interface Window {
+      turnstile?: { reset: (id?: string) => void };
+      onTurnstileToken?: (token: string) => void;
+    }
+  }
+
+  const section = document.querySelector<HTMLElement>('#ai-audit');
+  const workerUrl = section?.dataset.workerUrl ?? '';
+
+  const initialEl = document.querySelector<HTMLElement>('#ai-audit-initial');
+  const followupEl = document.querySelector<HTMLElement>('#ai-audit-followup');
+  const resultEl = document.querySelector<HTMLElement>('#ai-audit-result');
+  const fallbackEl = document.querySelector<HTMLElement>('#ai-audit-fallback');
+  const errorEl = document.querySelector<HTMLElement>('#ai-audit-error');
+
+  const initialForm = document.querySelector<HTMLFormElement>('#ai-audit-form');
+  const initialInput = document.querySelector<HTMLTextAreaElement>('#ai-audit-input');
+  const initialSubmit = initialForm?.querySelector<HTMLButtonElement>('button[type="submit"]');
+  const initialCharCount = document.querySelector<HTMLElement>('#ai-audit-char-count');
+
+  const followupForm = document.querySelector<HTMLFormElement>('#ai-audit-followup-form');
+  const followupQuestionEl = document.querySelector<HTMLElement>('#ai-audit-followup-question');
+  const followupInput = document.querySelector<HTMLTextAreaElement>('#ai-audit-followup-input');
+  const followupCharCount = document.querySelector<HTMLElement>('#ai-audit-followup-char-count');
+
+  function bindCharCount(textarea: HTMLTextAreaElement | null, counter: HTMLElement | null) {
+    if (!textarea || !counter) return;
+    const update = () => {
+      counter.textContent = `${textarea.value.length} characters`;
+    };
+    textarea.addEventListener('input', update);
+    update();
+  }
+  bindCharCount(initialInput, initialCharCount);
+  bindCharCount(followupInput, followupCharCount);
+  const followupSubmit = followupForm?.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+  let messages: Msg[] = [];
+  let turnstileToken = '';
+  let stage: Stage = 'initial';
+  let hasSucceededOnce = false;
+
+  window.onTurnstileToken = (token: string) => {
+    turnstileToken = token;
+    updateSubmitAvailability();
+  };
+
+  function updateSubmitAvailability() {
+    const ready = Boolean(turnstileToken);
+    if (initialSubmit) initialSubmit.disabled = !ready || stage !== 'initial';
+    if (followupSubmit) followupSubmit.disabled = !ready || stage !== 'followup';
+  }
+
+  function showError(message: string) {
+    if (!errorEl) return;
+    errorEl.textContent = message;
+    errorEl.hidden = false;
+  }
+
+  function clearError() {
+    if (!errorEl) return;
+    errorEl.hidden = true;
+    errorEl.textContent = '';
+  }
+
+  function setStage(next: Stage) {
+    stage = next;
+    if (initialEl) initialEl.hidden = next !== 'initial';
+    if (followupEl) followupEl.hidden = next !== 'followup';
+    if (resultEl) resultEl.hidden = next !== 'result';
+    if (fallbackEl) fallbackEl.hidden = next !== 'fallback';
+    updateSubmitAvailability();
+  }
+
+  function renderResult(data: {
+    before: { title: string; steps: string[] };
+    after: { title: string; steps: string[] };
+    highlight: string;
+  }) {
+    if (!resultEl) return;
+    resultEl.textContent = '';
+
+    const highlight = document.createElement('p');
+    highlight.className = 'ai-audit-highlight';
+    highlight.textContent = data.highlight;
+    resultEl.appendChild(highlight);
+
+    const diff = document.createElement('div');
+    diff.className = 'ai-audit-diff';
+
+    const hunks: Array<['remove' | 'add', { title: string; steps: string[] }]> = [
+      ['remove', data.before],
+      ['add', data.after],
+    ];
+    for (const [kind, hunk] of hunks) {
+      const label = document.createElement('div');
+      label.className = 'ai-audit-diff-hunk-label';
+      label.textContent = hunk.title;
+      diff.appendChild(label);
+
+      for (const step of hunk.steps) {
+        const line = document.createElement('div');
+        line.className = `ai-audit-diff-line ai-audit-diff-line-${kind}`;
+        const marker = document.createElement('span');
+        marker.className = 'ai-audit-diff-marker';
+        marker.textContent = kind === 'remove' ? '−' : '+';
+        const text = document.createElement('span');
+        text.textContent = step;
+        line.append(marker, text);
+        diff.appendChild(line);
+      }
+    }
+    resultEl.appendChild(diff);
+  }
+
+  async function sendTurn() {
+    const tokenForRequest = turnstileToken;
+    turnstileToken = '';
+    window.turnstile?.reset();
+    updateSubmitAvailability();
+
+    if (!tokenForRequest) {
+      showError('Please confirm you\'re not a robot and try again.');
+      return;
+    }
+
+    try {
+      const res = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, turnstileToken: tokenForRequest }),
+      });
+
+      if (res.status === 429) {
+        showError('The daily limit of requests has been reached, please try again tomorrow.');
+        return;
+      }
+      if (!res.ok) {
+        if (!hasSucceededOnce) {
+          setStage('fallback');
+        } else {
+          showError('Something went wrong, please try again.');
+        }
+        return;
+      }
+
+      const data = await res.json();
+      hasSucceededOnce = true;
+
+      if (data.type === 'question') {
+        messages = [...messages, { role: 'assistant', content: data.text, sig: data.sig }];
+        if (followupQuestionEl) followupQuestionEl.textContent = data.text;
+        if (followupInput) followupInput.value = '';
+        setStage('followup');
+      } else if (data.type === 'final') {
+        renderResult(data);
+        setStage('result');
+      } else {
+        showError('Something went wrong, please try again.');
+      }
+    } catch {
+      if (!hasSucceededOnce) {
+        setStage('fallback');
+      } else {
+        showError('Could not connect to the server, please try again.');
+      }
+    }
+  }
+
+  initialForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!initialInput || !initialSubmit) return;
+    clearError();
+
+    const description = initialInput.value.trim();
+    if (!description) return;
+
+    messages = [{ role: 'user', content: description }];
+
+    initialSubmit.disabled = true;
+    initialSubmit.textContent = 'Analyzuju…';
+    await sendTurn();
+    initialSubmit.textContent = 'Spustit audit →';
+    updateSubmitAvailability();
+  });
+
+  followupForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!followupInput || !followupSubmit) return;
+    clearError();
+
+    const answer = followupInput.value.trim();
+    if (!answer) return;
+
+    messages = [...messages, { role: 'user', content: answer }];
+
+    followupSubmit.disabled = true;
+    followupSubmit.textContent = 'Analyzuju…';
+    await sendTurn();
+    followupSubmit.textContent = 'Reply →';
+    updateSubmitAvailability();
+  });
+
+  const terminals = document.querySelectorAll<HTMLElement>('[data-reveal-terminal]');
+  if ('IntersectionObserver' in window && terminals.length) {
+    const io = new IntersectionObserver(
+      (entries, observer) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -20% 0px' }
+    );
+    terminals.forEach((el) => io.observe(el));
+  } else {
+    terminals.forEach((el) => el.classList.add('is-visible'));
+  }
+</script>

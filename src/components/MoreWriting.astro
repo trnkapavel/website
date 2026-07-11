@@ -1,0 +1,88 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  currentId: string;
+}
+
+const { currentId } = Astro.props;
+const posts = (await getCollection('writing'))
+  .filter((post) => post.id !== currentId)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 4);
+const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+{
+  posts.length > 0 && (
+    <div class="more-writing">
+      <p class="more-writing-label">More writing</p>
+      <ul>
+        {posts.map((post) => (
+          <li>
+            <a href={`/writing/${post.id}/`}>
+              <span class="title">{post.data.title}</span>
+              <time datetime={post.data.date.toISOString()}>{fmt.format(post.data.date)}</time>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a class="all-link" href="/writing/">All writing →</a>
+    </div>
+  )
+}
+
+<style>
+  .more-writing {
+    margin-top: 2.75rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--line-soft);
+  }
+  .more-writing-label {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.125rem;
+  }
+  .more-writing ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+  }
+  .more-writing a {
+    text-decoration: none;
+  }
+  .more-writing .title {
+    display: block;
+    font-family: var(--serif);
+    font-size: 1.0625rem;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+  .more-writing a:hover .title {
+    color: var(--accent);
+  }
+  .more-writing time {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .all-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-family: var(--sans);
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+  .all-link:hover {
+    color: var(--accent);
+  }
+</style>

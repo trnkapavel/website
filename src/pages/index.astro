@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionRail from '../components/SectionRail.astro';
+import AiAudit from '../components/AiAudit.astro';
 import home from '../content/singletons/home.json';
 import settings from '../content/singletons/settings.json';
 
@@ -22,30 +23,21 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
       <path class="line line-3" d="M 0,420 C 110,400 140,260 250,220 C 330,192 320,90 260,10" />
     </svg>
     <p class="label"><span aria-hidden="true">①</span> Hello</p>
-    <h1 class="display">{home.heroTitle}<br /><em>{emBefore}<span class="metric">10×</span>{emAfter}</em></h1>
+    <h1 class="display">{home.heroTitle}</h1>
+    <h2 class="display hero-subtitle"><em>{emBefore}<span class="metric">10×</span>{emAfter}</em></h2>
     <div class="hero-foot">
       <p class="sub">{home.heroSubtitle}</p>
       <div class="hero-ctas">
-        <a class="cta" href="/how-i-work/">See how I work <span aria-hidden="true">↓</span></a>
-        <a class="cta-quiet" href={`mailto:${settings.email}`}>Or email me directly <span aria-hidden="true">→</span></a>
+        <a class="cta" href="#ai-audit">Try the AI audit <span aria-hidden="true">↓</span></a>
+        <a class="cta-quiet" href="/how-i-work/">See how I work <span aria-hidden="true">→</span></a>
       </div>
     </div>
   </section>
 
-  <section class="wrap block" id="process" data-spy="02">
-    <h2 class="label"><span aria-hidden="true">②</span> Process</h2>
-    <div class="steps">
-      {home.steps.map((step, i) => (
-        <div class="step" data-num={String(i + 1).padStart(2, '0')} data-reveal style={`transition-delay:${i * 80}ms`}>
-          <h3 class="step-title">{step.title}</h3>
-          <p class="step-desc">{step.description}</p>
-        </div>
-      ))}
-    </div>
-  </section>
+  <AiAudit email={settings.email} />
 
   <section class="wrap block" data-chapter="03" id="work" data-spy="03">
-    <h2 class="label"><span aria-hidden="true">③</span> Selected work</h2>
+    <h2 class="label"><span aria-hidden="true">③</span> Proof</h2>
     <div class="work-list">
       {work.map((cs, i) => (
         <a class="work-card" href={`/work/${cs.id}/`} data-reveal style={`transition-delay:${i * 100}ms`}>
@@ -61,15 +53,33 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
           <div class="work-meta">
             <h3>{cs.data.title} <span class="arrow" aria-hidden="true">→</span></h3>
             <p class="label">{cs.data.category} · {cs.data.year}</p>
+            {cs.data.aiWorkflow && (
+              <p class="work-ai-strip">
+                {cs.data.aiWorkflow.explored} explored → {cs.data.aiWorkflow.shortlisted} shortlisted → {cs.data.aiWorkflow.shipped} shipped
+                <span class="work-ai-note">{cs.data.aiWorkflow.note}</span>
+              </p>
+            )}
           </div>
         </a>
       ))}
     </div>
   </section>
 
+  <section class="wrap block" data-chapter="04" id="process" data-spy="04">
+    <h2 class="label"><span aria-hidden="true">④</span> Process</h2>
+    <div class="steps">
+      {home.steps.map((step, i) => (
+        <div class="step" data-num={String(i + 1).padStart(2, '0')} data-reveal style={`transition-delay:${i * 80}ms`}>
+          <h3 class="step-title">{step.title}</h3>
+          <p class="step-desc">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
   <section class="wrap block columns">
-    <div data-chapter="04" id="writing" data-spy="04">
-      <h2 class="label"><span aria-hidden="true">④</span> Writing</h2>
+    <div data-chapter="05" id="writing" data-spy="05">
+      <h2 class="label"><span aria-hidden="true">⑤</span> Writing</h2>
       <ul class="post-list">
         {posts.map((post, i) => (
           <li data-reveal style={`transition-delay:${i * 80}ms`}><a href={`/writing/${post.id}/`}>{post.data.title}<span class="arrow" aria-hidden="true"> →</span></a></li>
@@ -77,8 +87,8 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
       </ul>
       <p class="all-link"><a href="/writing/">All writing</a></p>
     </div>
-    <div data-chapter="05" id="services" data-spy="05">
-      <h2 class="label"><span aria-hidden="true">⑤</span> Services</h2>
+    <div data-chapter="06" id="services" data-spy="06">
+      <h2 class="label"><span aria-hidden="true">⑥</span> Services</h2>
       <ul class="service-list">
         {home.services.map((service, i) => (
           <li data-reveal style={`transition-delay:${i * 80}ms`}><span class="idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{service}</li>
@@ -87,8 +97,8 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
     </div>
   </section>
 
-  <section class="wrap block" data-chapter="06" id="faq" data-spy="06">
-    <h2 class="label"><span aria-hidden="true">⑥</span> FAQ</h2>
+  <section class="wrap block" data-chapter="07" id="faq" data-spy="07">
+    <h2 class="label"><span aria-hidden="true">⑦</span> FAQ</h2>
     <div class="faq-list">
       {home.faq.map((item, i) => (
         <details class="faq-item" data-reveal style={`transition-delay:${i * 60}ms`}>
@@ -106,33 +116,48 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
 <style>
   .hero {
     position: relative;
-    padding-block: 5.5rem 4rem;
+    padding-block: 5.5rem 7rem;
     border-bottom: 1px solid var(--line-soft);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 100vw;
+    height: 100%;
+    margin-left: -50vw;
+    z-index: 0;
+    pointer-events: none;
     background:
       repeating-linear-gradient(
         100deg,
         transparent 0,
         transparent 2.5rem,
-        rgba(17, 17, 16, 0.025) 2.5rem,
-        rgba(17, 17, 16, 0.025) 2.6rem
+        rgba(17, 17, 16, 0.032) 2.5rem,
+        rgba(17, 17, 16, 0.032) 2.6rem
       ),
       repeating-linear-gradient(
         102deg,
         transparent 0,
         transparent 0.9rem,
-        rgba(17, 17, 16, 0.015) 0.9rem,
-        rgba(17, 17, 16, 0.015) 1rem
+        rgba(17, 17, 16, 0.022) 0.9rem,
+        rgba(17, 17, 16, 0.022) 1rem
       );
   }
   .hero h1 { margin-top: 1.5rem; text-wrap: balance; }
-  .hero h1 em { color: var(--muted); }
+  .hero .hero-subtitle {
+    font-size: clamp(1.75rem, 5vw, 4.25rem);
+    margin-top: 0.25rem;
+  }
+  .hero .hero-subtitle em { color: var(--muted); }
   .hero .metric {
     color: var(--accent);
     font-variant-numeric: tabular-nums;
     display: inline-block;
     min-width: 2ch;
   }
-  .hero > .label, .hero > h1, .hero > .hero-foot { position: relative; z-index: 1; }
+  .hero > .label, .hero > h1, .hero > h2, .hero > .hero-foot { position: relative; z-index: 1; }
 
   /* Hero line drawing — a pen-drawn abstract mark instead of a generic AI gradient blob */
   .hero-lines {
@@ -178,15 +203,18 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
   .sub { max-width: 34rem; color: var(--muted); font-size: 1.0625rem; }
   .cta {
     flex-shrink: 0;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     text-decoration: none;
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 3px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.9375rem 1.75rem;
     white-space: nowrap;
+    transition: opacity 0.2s, transform 0.15s;
   }
-  .cta:hover { opacity: 0.6; }
+  .cta:hover { opacity: 0.8; }
+  .cta:active { transform: translateY(1px) scale(0.98); }
 
   .hero-ctas { display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; flex-shrink: 0; }
   .cta-quiet {
@@ -196,8 +224,10 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
     text-decoration: none;
     color: var(--muted);
     white-space: nowrap;
+    transition: color 0.2s, transform 0.15s;
   }
   .cta-quiet:hover { color: var(--ink); }
+  .cta-quiet:active { transform: translateY(1px) scale(0.98); }
 
   .block { padding-block: 4rem; border-bottom: 1px solid var(--line-soft); }
 
@@ -228,6 +258,15 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
     flex-wrap: wrap;
     margin-top: 1.25rem;
   }
+  .work-ai-strip {
+    flex-basis: 100%;
+    font-size: 0.8125rem;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .work-ai-note { font-size: 0.75rem; opacity: 0.8; }
   .work-card h3 { font-size: clamp(1.625rem, 3.2vw, 2.375rem); }
   .work-card .arrow { display: inline-block; }
   .work-card:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
@@ -274,10 +313,10 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
   [data-chapter]::before {
     content: attr(data-chapter);
     position: absolute;
-    top: 0;
+    top: 1rem;
     right: 0;
     font-family: var(--serif);
-    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-size: clamp(2rem, 4vw, 3.5rem);
     line-height: 1;
     color: var(--paper);
     -webkit-text-stroke: 1px var(--line-soft);
@@ -286,7 +325,7 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
   }
   [data-chapter] > * { position: relative; z-index: 1; }
 
-  .faq-list { margin-top: 2rem; max-width: var(--measure); }
+  .faq-list { margin-top: 2rem; }
   .faq-item {
     border-bottom: 1px solid var(--line-soft);
   }
@@ -314,7 +353,7 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
   .faq-item[open] .faq-icon { transform: rotate(45deg); color: var(--accent); }
   .faq-a {
     padding-bottom: 1.25rem;
-    max-width: 42ch;
+    max-width: var(--measure);
     color: var(--muted);
     font-size: 0.9375rem;
   }
@@ -322,6 +361,7 @@ const [emBefore, emAfter] = home.heroTitleEm.split('10×');
   @media (prefers-reduced-motion: no-preference) {
     .frame img { transition: transform 0.6s ease; }
     .work-card:hover .frame img { transform: scale(1.025); }
+    .work-card:active .frame img { transform: scale(0.99); transition-duration: 0.15s; }
     .post-list .arrow { transition: opacity 0.2s ease; }
     .cta { transition: opacity 0.2s ease; }
   }

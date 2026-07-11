@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import MoreWriting from '../../components/MoreWriting.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('writing');
@@ -12,24 +14,50 @@ const { Content } = await render(entry);
 const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 <BaseLayout title={entry.data.title} description={entry.data.excerpt}>
-  <article class="wrap">
-    <header>
-      <time class="label" datetime={entry.data.date.toISOString()}>{fmt.format(entry.data.date)}</time>
-      <h1>{entry.data.title}</h1>
-    </header>
-    <div class="prose">
-      <Content />
-    </div>
-    <footer>
-      <hr class="rule-soft" />
-      <p><a href="/writing/">← All writing</a></p>
-    </footer>
-  </article>
+  <div class="wrap layout">
+    <article class="main">
+      <header>
+        <time class="label" datetime={entry.data.date.toISOString()}>{fmt.format(entry.data.date)}</time>
+        <h1>{entry.data.title}</h1>
+      </header>
+      <div class="prose">
+        <Content />
+      </div>
+      <footer>
+        <hr class="rule-soft" />
+        <p><a href="/writing/">← All writing</a></p>
+      </footer>
+    </article>
+    <aside class="sidebar">
+      <TableOfContents body={entry.body ?? ''} />
+      <MoreWriting currentId={entry.id} />
+    </aside>
+  </div>
 </BaseLayout>
 
 <style>
+  .main { min-width: 0; }
+  .sidebar { display: none; }
   header { padding-block: 3.5rem 2rem; }
   header h1 { margin-top: 1rem; max-width: 22ch; }
   .prose { padding-bottom: 2.5rem; }
   footer p { margin-block: 1.25rem 1rem; font-size: 0.875rem; }
+
+  @media (min-width: 1100px) {
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, var(--measure)) 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    .sidebar {
+      display: block;
+      position: sticky;
+      top: 2rem;
+      padding-top: 3.5rem;
+      align-self: start;
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto;
+    }
+  }
 </style>

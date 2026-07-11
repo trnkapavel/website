@@ -1,0 +1,199 @@
+---
+title: 'How to Build an AI Agent with Planning Loops: A Complete Guide'
+date: 2026-07-10
+excerpt: >-
+  What a planning loop is, why it's the heart of every capable AI agent, and
+  how to build one step by step.
+---
+
+For a long time, using large language models (LLMs) worked like a simple incantation: write a prompt, hit enter, and hope the output matches what you had in mind. But once you start building complex systems — a code migration tool, deep market research, an autonomous assistant — you quickly hit the limits of a single pass. Complex tasks can't be solved in one shot.
+
+That's why the AI community now talks about AI agents. These are systems that don't just generate text — they act, observe the world around them, and adapt to it. At the heart of every capable agent is a robust architecture: the planning loop.
+
+In this guide, we'll explain what a planning loop is, why it's essential, and how to build such an autonomous agent step by step.
+
+## What is a planning loop?
+
+Imagine you want to bake an elaborate cake. You don't throw all the ingredients into the oven at once and hope for the best. You follow a recipe (plan), check the batter's consistency along the way (observation), and if it's too dry, you add a splash of milk (replanning and adjustment). Finally, you check with a thermometer whether the cake is done (evaluation).
+
+A planning loop is the algorithmic equivalent of this human process. Instead of executing steps blindly, an agent proceeds as follows:
+
+- It builds a plan made up of individual steps/tasks.
+- It runs the first step of the plan using the available tools (an API, a search engine, a database) and records the result (observation) from that environment.
+- It evaluates progress toward the main goal.
+- It adjusts or replans the remaining steps based on new information, and repeats the whole process until the task is complete.
+
+Without a planning loop, an agent is extremely brittle. If an external tool returns an error or unexpected data, a simple script fails or starts hallucinating. A planning loop gives the agent the ability to self-correct.
+
+## Architecture of an agent with a planning loop
+
+To build an agent with a planning loop, you need to connect five core components:
+
+```
+Goal / Input
+     │
+     ▼
+Planner ◄─────────────────┐
+     │                      │  (replanning / adjustment)
+     ▼                      │
+Executor (tools)            │
+     │                      │
+     ▼                      │
+Evaluator / Observer ───────┘
+     │
+     ▼  (goal met)
+Final output
+```
+
+- **Goal (Input)**: The user's request (e.g. "Find Apple's latest financial results, summarize them, and compare them to Microsoft").
+- **Planner**: A language model instructed to break the goal down into logical milestones.
+- **Executor**: Code that calls concrete tools (search, calculator, API) for the current step.
+- **Evaluator (Observer)**: Logic (or another LLM call) that analyzes the tool's result and decides whether the step succeeded, failed, or produced unexpected data.
+- **Loop controller**: A state machine that decides whether to continue with the next step, rewrite the plan, or end the run because the goal has been met.
+
+## How to do it: A practical implementation in Python
+
+Let's see how to build such a planning loop in Python using direct access to an LLM.
+
+### Step 1: Defining the tools
+
+Our agent will need tools to interact with the world. We'll create simple mocked functions for search and calculations.
+
+```python
+def search_web(query: str) -> str:
+    # In a real application this would call the Google Search API or a vector DB
+    if "Apple results" in query:
+        return "Apple's Q3 revenue was $85.8 billion, a 5% year-over-year increase."
+    elif "Microsoft results" in query:
+        return "Microsoft's Q3 revenue was $61.9 billion, a 17% year-over-year increase."
+    return "No results found."
+
+def calculate(expression: str) -> str:
+    try:
+        # Safe evaluation of a mathematical expression
+        return str(eval(expression, {"__builtins__": None}))
+    except Exception as e:
+        return f"Error during calculation: {str(e)}"
+```
+
+### Step 2: Preparing the planner prompt
+
+The key to success is forcing the LLM to generate structured output (e.g. in YAML format) that contains its reasoning, the current plan, and the next action. This approach is based on the ReAct concept (Reason + Action).
+
+```python
+SYSTEM_PROMPT = """
+You are an expert planning AI agent. Your task is to fulfill the user's request by
+building a plan, executing its steps one by one, tracking their results, and
+revising the plan whenever necessary.
+
+You have access to these tools:
+- search_web(query)
+- calculate(expression)
+
+At every step you must respond strictly in the following YAML format:
+
+Thought: <Your reasoning about the current state and the next step>
+Plan:
+  - <Step 1>
+  - <Step 2>
+NextAction: <The tool call you want to run now, e.g. search_web("query")>
+GoalMet: <true or false>
+FinalAnswer: <Fill in only if GoalMet is true>
+"""
+```
+
+### Step 3: Implementing the planning loop
+
+Now let's write the main loop, which runs until the agent reports the task complete or reaches the maximum number of iterations.
+
+```python
+import yaml
+import openai  # Assumes the OpenAI API is installed and configured
+
+def run_agent(task: str):
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": f"Task: {task}"}
+    ]
+
+    max_iterations = 5
+    iteration = 0
+
+    while iteration < max_iterations:
+        print(f"\n--- Iteration {iteration + 1} ---")
+
+        # 1. Call the planner (LLM)
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            temperature=0.0  # Zero temperature for stable outputs
+        )
+
+        llm_output = response.choices[0].message.content
+        print(f"Agent output:\n{llm_output}")
+
+        # 2. Parse the YAML output
+        try:
+            data = yaml.safe_load(llm_output)
+        except Exception:
+            messages.append({"role": "user", "content": "Your output was not valid YAML. Please fix it."})
+            iteration += 1
+            continue
+
+        # If the goal is met, we're done
+        if data.get("GoalMet") is True or data.get("GoalMet") == "true":
+            print("\nTask completed successfully!")
+            print(f"Final answer: {data.get('FinalAnswer')}")
+            return data.get("FinalAnswer")
+
+        next_action = data.get("NextAction")
+        observation = ""
+
+        # 3. Run the tool (execution)
+        if next_action:
+            print(f"Executing action: {next_action}")
+            if "search_web" in next_action:
+                query = next_action.split('"')[1]
+                observation = search_web(query)
+            elif "calculate" in next_action:
+                expression = next_action.split('"')[1]
+                observation = calculate(expression)
+            else:
+                observation = "Unknown tool or invalid action format."
+        else:
+            observation = "No action was specified. Determine the next step."
+
+        print(f"Observation (result): {observation}")
+
+        # 4. Feed the result back into the context for further planning
+        messages.append({"role": "assistant", "content": llm_output})
+        messages.append({"role": "user", "content": f"Observation: {observation}"})
+
+        iteration += 1
+
+    print("\nThe agent reached the maximum number of steps without completing the task.")
+```
+
+## Why is this approach so powerful?
+
+Try running the function: `run_agent("Add up Apple's and Microsoft's Q3 revenue")`.
+
+1. **Iteration 1**: The agent builds a plan (find Apple, find Microsoft, add them up). It calls search for Apple. The observation returns: "Apple's revenue was $85.8 billion…"
+2. **Iteration 2**: The agent sees the result and adjusts the plan (still needs to find Microsoft and add up). It calls search for Microsoft. The observation returns: "Microsoft's revenue was $61.9 billion…"
+3. **Iteration 3**: The agent has both values. It calls the calculator with the expression `85.8 + 61.9`. The observation returns: "147.7".
+4. **Iteration 4**: The agent determines it has everything it needs. It sets `GoalMet: true` and returns a clear summary to the user.
+
+If the search had failed at any step (e.g. returned an empty page), the agent wouldn't get stuck. On the next iteration it would change the query (e.g. "Apple Q3 2024 financial report") until it got the data.
+
+## What to watch out for in production (best practices)
+
+When deploying planning loops to production, keep these challenges in mind:
+
+- **Protection against infinite loops**: Always set a hard limit (e.g. `max_iterations = 10`). Agents can easily get stuck in a cycle if a tool keeps returning an error message.
+- **Token cost**: Every iteration re-sends the entire context. If you don't trim or summarize it, an agent run can get expensive fast.
+- **Structured outputs (schema validation)**: Instead of plain text with YAML instructions, use modern API features like Structured Outputs (JSON mode) from OpenAI, or libraries like Pydantic and frameworks like LangGraph.
+- **Human-in-the-loop**: For sensitive actions (sending an email, making a payment), insert a human approval step into the execution phase.
+
+## Conclusion
+
+Moving from static prompts to dynamic planning loops takes what AI can do to a whole new level. It lets you build systems that can make decisions on their own, recover from errors, and deliver reliable results. The planning loop is the key that turns an ordinary language model into a genuinely useful digital colleague.

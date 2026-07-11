@@ -13,6 +13,14 @@ const work = defineCollection({
       scope: z.string(),
       outcome: z.string(),
       status: z.string().optional(),
+      aiWorkflow: z
+        .object({
+          explored: z.number(),
+          shortlisted: z.number(),
+          shipped: z.number(),
+          note: z.string(),
+        })
+        .optional(),
       cover: image(),
       gallery: z
         .array(

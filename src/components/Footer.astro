@@ -1,13 +1,18 @@
 ---
+import { Image } from 'astro:assets';
 import home from '../content/singletons/home.json';
 import settings from '../content/singletons/settings.json';
+import photo from '../assets/about/pavel-trnka.jpg';
 const year = new Date().getFullYear();
 ---
 <footer>
   <div class="wrap">
     <p class="label">Contact</p>
     <h2 class="display"><em>{home.ctaTitle}</em></h2>
-    <a class="email" href={`mailto:${settings.email}`}>{settings.email}</a>
+    <div class="contact-row">
+      <Image src={photo} alt="Pavel Trnka" width={320} height={320} class="avatar" />
+      <a class="email" href={`mailto:${settings.email}`}>{settings.email}</a>
+    </div>
     <div class="foot-row">
       <p class="socials">
         {settings.socials.map((s) => <a href={s.url}>{s.label}</a>)}
@@ -26,9 +31,22 @@ const year = new Date().getFullYear();
   }
   .label { color: #b9b3a8; }
   h2 { margin-top: 1.25rem; max-width: 16ch; }
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .avatar {
+    display: block;
+    width: 4.5rem;
+    height: 4.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+  }
   .email {
     display: inline-block;
-    margin-top: 2.5rem;
     font-family: var(--serif);
     font-size: clamp(1.25rem, 2.5vw, 1.75rem);
     text-underline-offset: 6px;

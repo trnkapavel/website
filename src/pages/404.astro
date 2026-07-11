@@ -2,13 +2,43 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="Not found">
-  <section class="wrap">
-    <h1>Page not found.</h1>
-    <p class="back"><a href="/">← Back home</a></p>
+  <section class="wrap not-found">
+    <p class="label"><span aria-hidden="true">✕</span> 404</p>
+    <h1 class="display">Nothing here.<br /><em>Wrong turn, right instinct.</em></h1>
+    <p class="lede">This page doesn't exist — or moved somewhere I haven't linked yet.</p>
+    <p class="links">
+      <a class="cta" href="/">Back home →</a>
+      <a class="cta-quiet" href="/#work">See the work</a>
+      <a class="cta-quiet" href="/writing">Read the writing</a>
+    </p>
   </section>
 </BaseLayout>
 
 <style>
-  section { padding-block: 5rem; }
-  .back { margin-top: 1.5rem; font-size: 0.875rem; }
+  .not-found { padding-block: 7rem; }
+  .lede { margin-top: 1rem; max-width: var(--measure); color: var(--muted); }
+  .links { margin-top: 2rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
+
+  .cta {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 2px solid currentColor;
+    padding-bottom: 3px;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .cta:active { transform: translateY(1px) scale(0.98); }
+
+  .cta-quiet {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .cta-quiet:hover { opacity: 1; }
+  .cta-quiet:active { transform: translateY(1px) scale(0.98); }
 </style>

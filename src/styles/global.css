@@ -10,6 +10,7 @@
 
   --serif: 'Newsreader', Georgia, serif;
   --sans: 'Inter', Helvetica, Arial, sans-serif;
+  --mono: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
 
   --measure: 42rem;
   --site-max: 72rem;
@@ -89,12 +90,73 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* Dlouhý text (case studies, články) */
 .prose { max-width: var(--measure); }
-.prose > * + * { margin-top: 1.25em; }
+.prose article > * + * { margin-top: 1.25em; }
 .prose h2 { margin-top: 2em; font-size: 1.75rem; }
 .prose h3 { margin-top: 1.6em; }
 .prose p, .prose li { font-size: 1.0625rem; color: var(--ink); }
 .prose img { margin-block: 2rem; }
 .prose a:hover { color: var(--accent); }
+
+.prose :not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  padding: 0.15em 0.4em;
+}
+
+.prose pre {
+  position: relative;
+  margin-block: 1.75rem;
+  padding: 2.75rem 1.5rem 1.5rem;
+  border: 1px solid var(--line-soft);
+  background: var(--paper) !important;
+  box-shadow: 0 12px 30px -20px rgba(17, 17, 16, 0.15);
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.prose pre code {
+  font-family: inherit;
+}
+
+.prose pre::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  padding-left: 5.25rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.prose pre[data-language='plaintext']::before,
+.prose pre[data-language='text']::before {
+  content: '';
+}
+
+.prose pre::after {
+  content: '';
+  position: absolute;
+  top: 0.9375rem;
+  left: 1.5rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background: var(--line-soft);
+  box-shadow:
+    1.1rem 0 0 var(--line-soft),
+    2.2rem 0 0 var(--line-soft);
+}
 
 /* Scroll reveal — progressive enhancement, no-JS/reduced-motion renders content visible immediately */
 @media (prefers-reduced-motion: no-preference) {

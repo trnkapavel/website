@@ -2,33 +2,44 @@
 
 Working notes for continuing this project on another machine. Not documentation — a snapshot of what's in flight.
 
-## Where things stand
+## Where things stand (2026-07-14)
 
-- Site language: **fully English now.** The last Czech content (an article on AI agents/planning loops) was translated and moved to `src/content/writing/how-to-build-an-ai-agent-with-planning-loops-a-complete-guide.mdoc` (old Czech-slug file removed). UI strings in `AiAudit.astro`, `TableOfContents.astro`, `MoreWriting.astro` were also translated. A repo-wide grep for Czech diacritics in `src/` should stay clean going forward — re-run before publishing anything new:
-  ```
-  grep -rlP '[ěščřžýáíéůúďťňĚŠČŘŽÝÁÍÉŮÚĎŤŇ]' src --include="*.astro" --include="*.json" --include="*.mdoc" --include="*.ts" --include="*.mjs"
-  ```
-- Homepage restructuring from the AI Audit plan (see `/Users/paveltrnka/.claude/plans/eventual-soaring-wilkes.md`) is **largely implemented**: AI Audit section now sits right under the hero (`data-spy="02"`, no watermark), "Selected work" is now "Proof" and reordered, `SectionRail.astro` and `404.astro` updated accordingly, `content.config.ts` has the optional `aiWorkflow` schema field. The conversational/agentic-loop rewrite is also in place: `cloudflare/ai-audit/src/index.ts` implements the `messages[]`-based loop with `ask_followup`/`finalize_audit` tool use, and `AiAudit.astro`'s frontend JS handles the multi-turn `type === 'question'` / `type === 'final'` flow.
-  - **Known gap, needs fixing before this is truly English end-to-end**: the worker's system prompt in `cloudflare/ai-audit/src/index.ts` (instructions + few-shot examples sent to the LLM) is still **in Czech** (~35 lines with diacritics). Since this prompt drives the language the AI responds in, an English-language site with a Czech-language backend prompt is inconsistent — translate this next.
-  - `AiAudit.astro`'s `WORKER_URL` and `TURNSTILE_SITE_KEY` are still placeholders — worker isn't deployed yet.
-- Hero CTA fixed: primary CTA now scrolls to `#ai-audit` ("Try the AI audit ↓") styled as a real filled button (`--ink` bg / `--paper` text, matches `.cta-button` in `AiAudit.astro`); "See how I work" demoted to the quiet secondary link.
-- Fixed a real bug: the article sidebar (`TableOfContents.astro` + `MoreWriting.astro` on `/writing/[slug]/`) used to visually overlap during scroll because only `.toc` had `position: sticky` while `.more-writing` scrolled normally as a sibling. Fixed by making the whole `<aside class="sidebar">` sticky as one unit instead (see `src/pages/writing/[slug].astro`).
-- Fixed code blocks in articles: added Shiki syntax highlighting (`markdoc.config.mjs`, theme `github-light`), terminal-style chrome (dots + language label) matching the homepage AI Audit terminal, and line-wrapping (`white-space: pre-wrap; overflow-wrap: anywhere;`) so long lines don't get clipped.
-- Added heading `id` slugification via a custom Markdoc `heading` node override in `markdoc.config.mjs` (uses `src/lib/slugify.mjs`), needed for the TOC's anchor links.
+- **Cloudflare Worker (AI Audit backend) is live and working.** Deployed at `https://ai-audit-worker.trnkapavel.workers.dev`. `cloudflare/ai-audit/src/index.ts` system prompt and tool descriptions are now fully in English (translated from Czech). Auth (`wrangler login`), KV namespace (`RATE_LIMIT`, id `09103eb1adbe4f14860f63dc6d4094d0`), and all 3 secrets (`ANTHROPIC_API_KEY`, `TURNSTILE_SECRET_KEY`, `HMAC_SECRET`) are configured on Cloudflare's side (not in git, nothing to redo on a new machine unless redeploying secrets).
+- **Critical bug fixed**: `tool_choice` was `{type: 'auto'}`, which let the model respond with plain text instead of calling `ask_followup`/`finalize_audit`, causing persistent `502 upstream_error`. Fixed to `{type: 'any'}` for non-final turns. This was the root cause of most of the debugging in the previous session.
+- **CORS**: `wrangler.toml`'s `ALLOWED_ORIGIN` is `"https://trnka.website,http://localhost:4321"` (multi-origin, resolved via `resolveOrigin()` in `index.ts`). Open decision: strip `localhost:4321` before going fully "production-clean," or keep it for future local dev — not decided.
+- **Frontend wired up**: `AiAudit.astro` has real values now — `WORKER_URL = 'https://ai-audit-worker.trnkapavel.workers.dev'`, `TURNSTILE_SITE_KEY = '0x4AAAAAAD1H8v8YafPn18Nb'` (Turnstile widget's domain allowlist includes `localhost` for dev testing). Leftover Czech button-loading strings (`'Analyzuju…'`, `'Spustit audit →'`) were found and translated to English.
+- **New: real visual progress bar** added to `AiAudit.astro` (3-step: Describe → Follow-up → Result), wired into the existing `setStage()` state machine, using existing design tokens. Confirmed working live by the user ("Ano, perfektní").
+- `astro.config.mjs` `site` is now `'https://trnka.website'` (was a placeholder).
+- Debug `console.error(...)` logging was added throughout `index.ts`'s error branches during troubleshooting and **was never removed**. Not a security issue (no secrets logged), just noise — decide later whether to trim.
+- **Live-verification status**: the `ask_followup` (follow-up question) stage has been confirmed working end-to-end in the browser. The final `finalize_audit` **result screen** (before/after comparison UI) has NOT yet been visually confirmed — worth testing through to completion next.
+- Cost check: user reported ~$0.04 spent on Anthropic API during a day of testing — cheap, not a concern.
+
+## Blocking issue for deployment: GitHub Actions secrets are NOT configured
+
+Checked via `gh api repos/trnkapavel/website/actions/secrets` — **zero secrets exist** in the repo. `.github/workflows/deploy.yml` (FTP deploy on push to `main`, via `SamKirkland/FTP-Deploy-Action@v4.3.5`) requires:
+- `FTP_SERVER`
+- `FTP_USERNAME`
+- `FTP_PASSWORD`
+- `FTP_SERVER_DIR` (deliberately a secret, not hardcoded — needed to target a subdirectory so this deploy doesn't overwrite the existing `/ai-digest/` AI Briefing project living on the same `trnka.website` host)
+
+Until these are set (GitHub repo Settings → Secrets and variables → Actions), pushing to `main` will build successfully but the FTP deploy step will fail. **Do this before relying on push-to-deploy.**
 
 ## Local-only directories (gitignored, won't be on the second machine via git)
 
-`.claude/`, `.serena/`, `.agents/`, `skills-lock.json` were added to `.gitignore` — these are local tool state (Claude Code, Serena MCP, agent skills), not site source. On a second machine, these tools will re-populate their own local state as needed; nothing to carry over manually.
+`.claude/`, `.serena/`, `.agents/`, `skills-lock.json` are gitignored — local tool state, re-populates itself, nothing to carry over.
 
-`cloudflare/ai-audit/node_modules/` and `.wrangler/` are gitignored as usual. Run `npm install` inside `cloudflare/ai-audit/` on the new machine before touching the worker. `.dev.vars` (holds `ANTHROPIC_API_KEY`, `TURNSTILE_SECRET_KEY` for local `wrangler dev`) is also gitignored and was never committed — you'll need to recreate it locally if you resume worker development.
+`cloudflare/ai-audit/node_modules/` and `.wrangler/` are gitignored. Run `npm install` inside `cloudflare/ai-audit/` on the new machine before touching the worker. `.dev.vars` (holds `ANTHROPIC_API_KEY`, `TURNSTILE_SECRET_KEY` for local `wrangler dev`) is gitignored and was never committed — recreate locally if resuming worker dev. Deployed secrets on Cloudflare's side are already live and don't need to be redone.
 
 ## Workflow reminders
 
 - Content editing: Keystatic admin at `http://127.0.0.1:4321/keystatic`, only works with `npm run dev` running. New "Writing" entries need the **Excerpt** field filled or the build fails.
-- After CSS/markup changes: `npx astro build` to catch errors, then check visually in the browser (claude-in-chrome MCP, when connected — it was disconnected for a large stretch of the previous session, forcing verification via `curl`/`grep` on built HTML instead).
+- After CSS/markup changes: `npx astro build` to catch errors, then check visually in the browser (claude-in-chrome MCP).
+- Worker changes: `cd cloudflare/ai-audit && wrangler deploy` to push live; `wrangler tail` to stream logs for debugging.
 - Design iteration preference: go in small steps on subtle effects (textures, opacity) — easy to overshoot into "too busy." Paired elements (photo + contact, icon + text) should sit side by side, not stacked.
 
 ## Not yet resolved / open
 
-- `close-SKILL.md` at the repo root is a stray untracked file (unrelated Memophant skill definition), never committed, left alone pending a decision to delete it.
-- The AI Audit agentic-loop rewrite (frontend conversational flow + worker tool-use loop + HMAC signing + Turnstile invisible mode) from the plan is the largest remaining chunk of work — see the plan file for the full spec.
+- GitHub Actions FTP secrets missing (see blocking issue above) — biggest open item.
+- Decide whether to strip debug `console.error` logging from `index.ts`, and whether to keep `localhost:4321` in `ALLOWED_ORIGIN` long-term.
+- Full live test through to the `finalize_audit` result screen hasn't been visually confirmed yet.
+- Local changes (worker translation/fix, CORS, frontend wiring, progress bar) are committed in this session's push — check `git log` on the new machine to confirm they landed.

@@ -6,7 +6,7 @@ compatibility_date = "2026-07-09"
 # deploy, např. api.trnka.website/audit -> tento worker.
 
 kv_namespaces = [
-  { binding = "RATE_LIMIT", id = "REPLACE_WITH_KV_NAMESPACE_ID" }
+  { binding = "RATE_LIMIT", id = "09103eb1adbe4f14860f63dc6d4094d0" }
 ]
 
 # Secrets (nastavit přes `wrangler secret put <NAME>`, nikdy v repu):
@@ -15,4 +15,4 @@ kv_namespaces = [
 
 # Nastav na skutečnou doménu webu zároveň s astro.config.mjs `site`.
 [vars]
-ALLOWED_ORIGIN = "https://example.com"
+ALLOWED_ORIGIN = "https://trnka.website,http://localhost:4321"

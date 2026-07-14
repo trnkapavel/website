@@ -4,10 +4,8 @@ interface Props {
 }
 const { email } = Astro.props;
 
-// Replace with the actual worker URL after deployment (see cloudflare/ai-audit/).
-const WORKER_URL = 'https://api.example.com/audit';
-// Replace with the Turnstile site key from the Cloudflare dashboard.
-const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
+const WORKER_URL = 'https://ai-audit-worker.trnkapavel.workers.dev';
+const TURNSTILE_SITE_KEY = '0x4AAAAAAD1H8v8YafPn18Nb';
 ---
 
 <section class="wrap block" id="ai-audit" data-spy="02" data-worker-url={WORKER_URL}>
@@ -17,6 +15,12 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
     follow-up question and show you a visual comparison of how you handle it
     today versus how it could work with AI.
   </p>
+
+  <ol id="ai-audit-progress" class="ai-audit-progress" aria-label="Audit progress">
+    <li data-step="initial" class="is-active"><span class="ai-audit-progress-num">01</span> Describe</li>
+    <li data-step="followup"><span class="ai-audit-progress-num">02</span> Follow-up</li>
+    <li data-step="result"><span class="ai-audit-progress-num">03</span> Result</li>
+  </ol>
 
   <div id="ai-audit-initial">
     <form id="ai-audit-form" class="ai-audit-form">
@@ -55,7 +59,7 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
           <span class="ai-audit-dot" aria-hidden="true"></span>
           <span class="ai-audit-dot" aria-hidden="true"></span>
           <span class="ai-audit-dot" aria-hidden="true"></span>
-          <span class="ai-audit-terminal-label">ai audit — your answer</span>
+          <span class="ai-audit-terminal-label" id="ai-audit-followup-label">ai audit — your answer</span>
         </div>
         <div class="ai-audit-terminal-body">
           <span class="ai-audit-prompt" aria-hidden="true">❯</span>
@@ -149,6 +153,43 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
     font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
     font-size: 0.875rem;
     color: var(--muted);
+  }
+  .ai-audit-progress {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ai-audit-progress li {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--line-soft);
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.8125rem;
+    color: var(--faint);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .ai-audit-progress-num {
+    color: var(--faint);
+    transition: color 0.2s ease;
+  }
+  .ai-audit-progress li.is-done {
+    color: var(--muted);
+    border-color: var(--ink);
+  }
+  .ai-audit-progress li.is-done .ai-audit-progress-num {
+    color: var(--ink);
+  }
+  .ai-audit-progress li.is-active {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+  .ai-audit-progress li.is-active .ai-audit-progress-num {
+    color: var(--accent);
   }
   .ai-audit-terminal-body {
     display: flex;
@@ -306,6 +347,8 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
   type Msg = { role: 'user' | 'assistant'; content: string; sig?: string };
   type Stage = 'initial' | 'followup' | 'result' | 'fallback';
 
+  const MAX_FOLLOWUPS = 2;
+
   declare global {
     interface Window {
       turnstile?: { reset: (id?: string) => void };
@@ -329,6 +372,9 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
 
   const followupForm = document.querySelector<HTMLFormElement>('#ai-audit-followup-form');
   const followupQuestionEl = document.querySelector<HTMLElement>('#ai-audit-followup-question');
+  const followupLabelEl = document.querySelector<HTMLElement>('#ai-audit-followup-label');
+  const progressSteps = document.querySelectorAll<HTMLElement>('#ai-audit-progress li');
+  const progressOrder: Stage[] = ['initial', 'followup', 'result'];
   const followupInput = document.querySelector<HTMLTextAreaElement>('#ai-audit-followup-input');
   const followupCharCount = document.querySelector<HTMLElement>('#ai-audit-followup-char-count');
 
@@ -378,6 +424,13 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
     if (followupEl) followupEl.hidden = next !== 'followup';
     if (resultEl) resultEl.hidden = next !== 'result';
     if (fallbackEl) fallbackEl.hidden = next !== 'fallback';
+    const stepIndex = progressOrder.indexOf(next);
+    if (stepIndex !== -1) {
+      progressSteps.forEach((li, i) => {
+        li.classList.toggle('is-done', i < stepIndex);
+        li.classList.toggle('is-active', i === stepIndex);
+      });
+    }
     updateSubmitAvailability();
   }
 
@@ -458,7 +511,9 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
 
       if (data.type === 'question') {
         messages = [...messages, { role: 'assistant', content: data.text, sig: data.sig }];
+        const questionNumber = messages.filter((m) => m.role === 'assistant').length;
         if (followupQuestionEl) followupQuestionEl.textContent = data.text;
+        if (followupLabelEl) followupLabelEl.textContent = `ai audit — question ${questionNumber} of ${MAX_FOLLOWUPS}`;
         if (followupInput) followupInput.value = '';
         setStage('followup');
       } else if (data.type === 'final') {
@@ -487,9 +542,9 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
     messages = [{ role: 'user', content: description }];
 
     initialSubmit.disabled = true;
-    initialSubmit.textContent = 'Analyzuju…';
+    initialSubmit.textContent = 'Analyzing…';
     await sendTurn();
-    initialSubmit.textContent = 'Spustit audit →';
+    initialSubmit.textContent = 'Run audit →';
     updateSubmitAvailability();
   });
 
@@ -504,7 +559,7 @@ const TURNSTILE_SITE_KEY = 'REPLACE_WITH_TURNSTILE_SITE_KEY';
     messages = [...messages, { role: 'user', content: answer }];
 
     followupSubmit.disabled = true;
-    followupSubmit.textContent = 'Analyzuju…';
+    followupSubmit.textContent = 'Analyzing…';
     await sendTurn();
     followupSubmit.textContent = 'Reply →';
     updateSubmitAvailability();
